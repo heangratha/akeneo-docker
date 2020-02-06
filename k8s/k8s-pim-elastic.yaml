@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-pim-elastic-demo
+spec:
+  selector:
+    matchLabels:
+      app: deploy-pim-elastic-demo
+  template:
+    metadata:
+      labels:
+        app: deploy-pim-elastic-demo
+    spec:
+      volumes:
+        - name: 'vol-pim-elastic-demo'
+          persistentVolumeClaim:
+            claimName: pvc-pim-demo
+      containers:
+        - name: deploy-pim-elastic-demo
+          image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+          ports:
+            - containerPort: 9200
+          env:
+            - name: discovery.type
+              value: single-node
+          volumeMounts:
+            - name: 'vol-pim-elastic-demo'
+              mountPath: /usr/share/elasticsearch/data
+              subPath: elasticsearch
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: 'svc-pim-demo'
+spec:
+  ports:
+    - port: 9200
+  selector:
+    app: 'deploy-pim-elastic-demo'

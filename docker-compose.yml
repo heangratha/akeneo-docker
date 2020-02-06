@@ -1,0 +1,33 @@
+---
+
+version: '3.7'
+
+services:
+  web:
+    image: rathaheang/akeneo-pim:3.2
+    environment:
+      LOCAL_USER_ID: 1001
+    volumes:
+      - ./pim:/var/www/html
+      - ./docker/000-default.conf:/etc/apache2/sites-available/000-default.conf
+      - ./docker/php.ini:/etc/php/7.2/cli/php.ini
+      - ./docker/php.ini:/etc/php/7.2/fpm/php.ini
+    ports:
+      - 80:80
+  db:
+    image: mysql:5.7
+    ports:
+      - 3306:3306
+    volumes:
+      - db-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: akeneo_pim
+      MYSQL_USER: akeneo_pim
+      MYSQL_PASSWORD: akeneo_pim
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+    environment:
+      discovery.type: single-node
+volumes:
+  db-data:

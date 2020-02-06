@@ -1,0 +1,56 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-pim-demo
+spec:
+  selector:
+    matchLabels:
+      app: deploy-pim-demo
+  template:
+    metadata:
+      labels:
+        app: deploy-pim-demo
+    spec:
+      volumes:
+        - name: 'vol-pim-demo'
+          persistentVolumeClaim:
+            claimName: pvc-pim-demo
+      containers:
+        - name: deploy-pim-demo
+          image: rathaheang/akeneo-pim:3.2
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          volumeMounts:
+            - name: 'vol-pim-demo'
+              mountPath: /var/www/html
+              subPath: data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: 'svc-pim-demo'
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: 'deploy-pim-demo'
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: 'ing-pim-demo'
+spec:
+  rules:
+    - host: 'demo-pim.web-essentials.co'
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: 'svc-pim-demo'
+              servicePort: 80
